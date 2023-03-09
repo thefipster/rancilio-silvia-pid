@@ -3,7 +3,9 @@
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
-char *mqttBoilerTopic, *mqttHeadTopic, *mqttPidTopic;
+float targetTemperature = 92;
+
+char *mqttBoilerTopic, *mqttHeadTopic, *mqttPidTopic, *mqttHeaterTopic;
 
 int mqttPublishWindow = 1000;
 
@@ -14,11 +16,24 @@ void setupMqtt(IPAddress ip, uint16_t port, int interval)
     mqttPublishWindow = interval;
 }
 
-void setupMqttTopics(char *boilerTopic, char *headTopic, char *pidTopic)
+void setupMqttTopics(char *boilerTopic, char *headTopic, char *pidTopic, char *heaterTopic)
 {
     mqttBoilerTopic = boilerTopic;
     mqttHeadTopic = headTopic;
     mqttPidTopic = pidTopic;
+    mqttHeaterTopic = heaterTopic;
+}
+
+void callback(char *topic, byte *payload, unsigned int length)
+{
+    String message;
+    for (int i = 0; i < length; i++)
+    {
+        Serial.print((char)payload[i]);
+        message += (char)payload[i];
+    }
+    float num =atof(message.c_str());
+    targetTemperature = num;
 }
 
 void connectMqtt(char *clientId, char *user, char *password)
@@ -27,6 +42,14 @@ void connectMqtt(char *clientId, char *user, char *password)
     {
         Serial.println("MQTT connection failed.");
     }
+
+    mqttClient.setCallback(callback);
+    mqttClient.subscribe("hassio/input_number/kitchen_rancilio_target_temperature/state");
+}
+
+float getTargetTemperature()
+{
+    return targetTemperature;
 }
 
 unsigned long mqttPublishWindowStart = 0;
@@ -51,12 +74,14 @@ void publishState(bool state)
     {
         mqttPublishStateWindowStart += mqttPublishWindow;
 
-        mqttClient.publish("lab/pid/state", state ? "1" : "0");
+        mqttClient.publish(mqttHeaterTopic, state ? "1" : "0");
     }
 }
 
 void ensureMqtt(char *clientId, char *user, char *password)
 {
+    mqttClient.loop();
+
     if (!mqttClient.connected())
     {
         while (!mqttClient.connected())
