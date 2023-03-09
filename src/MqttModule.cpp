@@ -3,9 +3,25 @@
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
 
-float targetTemperature = 92;
+double target = 92;
+double coldstart = 80;
+double window = 1000;
+double cycle = 0.2;
+double pValue = 55;
+double iValue = 255;
+double dValue = 0;
 
-char *mqttBoilerTopic, *mqttHeadTopic, *mqttPidTopic, *mqttHeaterTopic;
+char *mqttBoilerTopic;
+char *mqttHeadTopic;
+char *mqttPidTopic;
+char *mqttHeaterTopic;
+char *mqttTargetTopic;
+char *mqttColdstartTopic;
+char *mqttWindowTopic;
+char *mqttCycleTopic;
+char *mqttPValueTopic;
+char *mqttIValueTopic;
+char *mqttDValueTopic;
 
 int mqttPublishWindow = 1000;
 
@@ -24,6 +40,14 @@ void setupMqttTopics(char *boilerTopic, char *headTopic, char *pidTopic, char *h
     mqttHeaterTopic = heaterTopic;
 }
 
+void connectMqtt(char *clientId, char *user, char *password)
+{
+    if (!mqttClient.connect(clientId, user, password))
+    {
+        Serial.println("MQTT connection failed.");
+    }
+}
+
 void callback(char *topic, byte *payload, unsigned int length)
 {
     String message;
@@ -32,24 +56,98 @@ void callback(char *topic, byte *payload, unsigned int length)
         Serial.print((char)payload[i]);
         message += (char)payload[i];
     }
-    float num =atof(message.c_str());
-    targetTemperature = num;
-}
 
-void connectMqtt(char *clientId, char *user, char *password)
-{
-    if (!mqttClient.connect(clientId, user, password))
+    double value = atof(message.c_str());
+
+    if (strcmp(topic, mqttTargetTopic) == 0)
     {
-        Serial.println("MQTT connection failed.");
+        target = value;
     }
 
-    mqttClient.setCallback(callback);
-    mqttClient.subscribe("hassio/input_number/kitchen_rancilio_target_temperature/state");
+    if (strcmp(topic, mqttColdstartTopic) == 0)
+    {
+        coldstart = value;
+    }
+
+    if (strcmp(topic, mqttWindowTopic) == 0)
+    {
+        window = value;
+    }
+
+    if (strcmp(topic, mqttCycleTopic) == 0)
+    {
+        cycle = value;
+    }
+
+    if (strcmp(topic, mqttPValueTopic) == 0)
+    {
+        pValue = value;
+    }
+
+    if (strcmp(topic, mqttIValueTopic) == 0)
+    {
+        iValue = value;
+    }
+
+    if (strcmp(topic, mqttDValueTopic) == 0)
+    {
+        dValue = value;
+    }
 }
 
-float getTargetTemperature()
+void subscribeMqtt(char *target, char *coldstart, char *window, char *cycle, char *pValue, char *iValue, char *dValue)
 {
-    return targetTemperature;
+    mqttTargetTopic = target;
+    mqttColdstartTopic = coldstart;
+    mqttWindowTopic = window;
+    mqttCycleTopic = cycle;
+    mqttPValueTopic = pValue;
+    mqttIValueTopic = iValue;
+    mqttDValueTopic = dValue;
+
+    mqttClient.setCallback(callback);
+
+    mqttClient.subscribe(mqttTargetTopic);
+    mqttClient.subscribe(mqttColdstartTopic);
+    mqttClient.subscribe(mqttWindowTopic);
+    mqttClient.subscribe(mqttCycleTopic);
+    mqttClient.subscribe(mqttPValueTopic);
+    mqttClient.subscribe(mqttIValueTopic);
+    mqttClient.subscribe(mqttDValueTopic);
+}
+
+double getTarget()
+{
+    return target;
+}
+
+double getColdstart()
+{
+    return coldstart;
+}
+double getWindow()
+{
+    return window;
+}
+
+double getCycle()
+{
+    return cycle;
+}
+
+double getPValue()
+{
+    return pValue;
+}
+
+double getIValue()
+{
+    return iValue;
+}
+
+double getDValue()
+{
+    return dValue;
 }
 
 unsigned long mqttPublishWindowStart = 0;
