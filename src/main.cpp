@@ -10,9 +10,11 @@ double pidSetpoint = 92;
 double pidWindowMs = 1000;
 double pidColdstart = 85;
 double pidDutyCycle = 0.2;
+
 double pidKp = 33;
 double pidKi = 255;
 double pidKd = 0;
+
 unsigned long pidLoopStart = 0;
 
 unsigned long mqttWindowMs = 1000;
@@ -50,11 +52,7 @@ void setup()
 
   // mqtt
   mqttClient.setServer(MQTT_IP, MQTT_PORT);
-  if (!mqttClient.connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS))
-  {
-    Serial.println("MQTT connection failed.");
-  }
-  else
+  if (mqttClient.connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS))
   {
     mqttClient.setCallback(callback);
 

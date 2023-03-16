@@ -1,6 +1,12 @@
 #ifndef MQTTTOPICS_H
 #define MQTTTOPICS_H
 
+// Server & Client
+#define MQTT_IP IPAddress(192, 168, 1, 100)
+#define MQTT_PORT 1883
+#define MQTT_INTERVAL 1000
+#define MQTT_CLIENTID "rancilio-silvia"
+
 // Publish topics
 #define MQTT_PID_TOPIC "kitchen/rancilio/control"
 #define MQTT_BOILER_TOPIC "kitchen/rancilio/boiler"

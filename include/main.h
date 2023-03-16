@@ -6,15 +6,14 @@
 #include <AsyncTCP.h>
 #include <Credentials.h>
 #include <Pins.h>
-#include <MqttTopics.h>
-#include <MqttServer.h>
+#include <MqttConfig.h>
 #include <ESPAsyncWebServer.h>
 #include <PID_v1.h>
 #include <PubSubClient.h>
 #include <TsicSensor.h>
 #include <WiFi.h>
 
-#define SERIAL_BAUD 9600
+#define SERIAL_BAUD 115200
 #define HOSTNAME "rancilio-silvia"
 
 void setup();
