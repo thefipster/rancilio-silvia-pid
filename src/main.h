@@ -1,36 +1,25 @@
 #ifndef Main_h
 #define Main_h
 
-#include "SerialModule.h"
-#include "NetworkModule.h"
-#include "MqttModule.h"
-#include "SsrModule.h"
-#include "PidModule.h"
-#include "TsicModule.h"
-
-#include <AsyncTCP.h>
-#include <ESPAsyncWebServer.h>
+#include <Arduino.h>
 #include <AsyncElegantOTA.h>
+#include <AsyncTCP.h>
+#include <Credentials.h>
+#include <Pins.h>
+#include <MqttTopics.h>
+#include <MqttServer.h>
+#include <ESPAsyncWebServer.h>
+#include <PID_v1.h>
+#include <PubSubClient.h>
+#include <TsicSensor.h>
+#include <WiFi.h>
+
+#define SERIAL_BAUD 9600
+#define HOSTNAME "rancilio-silvia"
 
 void setup();
-
 void loop();
-
-void publish(
-    double temp1,
-    double temp2,
-    double pid);
-
-void notFound(AsyncWebServerRequest *request);
-
-void setupWebserver();
-
-void ensure();
-
-void sense();
-
-void control();
-
-String printConfig();
+void callback(char *topic, byte *payload, unsigned int length);
+void ensureConnections();
 
 #endif

@@ -1,143 +1,177 @@
 #include "main.h"
 
-#define SSR_PIN 13
+double headTemp = 0;
+bool heaterState = false;
 
-#define TSIC_BOILER_PIN 26
-#define TSIC_HEAD_PIN 34
+double pidInput;
+double pidOutput;
+double pidControl = 0;
+double pidSetpoint = 92;
+double pidWindowMs = 1000;
+double pidColdstart = 85;
+double pidDutyCycle = 0.2;
+double pidKp = 33;
+double pidKi = 255;
+double pidKd = 0;
+unsigned long pidLoopStart = 0;
 
-#define SERIAL_BAUD 9600
-
-#define MQTT_IP IPAddress(192, 168, 1, 100)
-#define MQTT_PORT 1883
-#define MQTT_INTERVAL 1000
-
-#define MQTT_CLIENTID "rancilio-silvia"
-#define MQTT_USERNAME "{{mqtt_username}}"
-#define MQTT_PASSWORD "{{mqtt_password}}"
-
-#define MQTT_PID_TOPIC "kitchen/rancilio/control"
-#define MQTT_BOILER_TOPIC "kitchen/rancilio/boiler"
-#define MQTT_HEAD_TOPIC "kitchen/rancilio/head"
-#define MQTT_HEATER_TOPIC "kitchen/rancilio/state"
-
-#define MQTT_TARGET_TOPIC "hassio/input_number/kitchen_rancilio_target_temperature/state"
-#define MQTT_COLDSTART_TOPIC "hassio/input_number/kitchen_rancilio_coldstart_temperature/state"
-#define MQTT_WINDOW_TOPIC "hassio/input_number/kitchen_rancilio_duty_window/state"
-#define MQTT_CYCLE_TOPIC "hassio/input_number/kitchen_rancilio_duty_cycle/state"
-#define MQTT_P_TOPIC "hassio/input_number/kitchen_rancilio_p_value/state"
-#define MQTT_I_TOPIC "hassio/input_number/kitchen_rancilio_i_value/state"
-#define MQTT_D_TOPIC "hassio/input_number/kitchen_rancilio_d_value/state"
-
-#define PID_WINDOW 1000
-#define PID_SETPOINT 90
-#define PID_COLDSTART 80
-
-#define PID_KP 55
-#define PID_KI 255
-#define PID_KD 0
-#define PID_DUTY 0.2
-
-#define HOSTNAME "rancilio-silvia"
-
-#define WIFI_SSID "{{wifi_ssid}}"
-#define WIFI_PASS "{{wifi_password}}"
+unsigned long mqttWindowMs = 1000;
+unsigned long mqttLoopStart = 0;
 
 AsyncWebServer server(80);
+TsicSensor *boilerSensor;
+TsicSensor *headSensor;
+PID boilerPid(&pidInput, &pidOutput, &pidSetpoint, pidKp, pidKi, pidKd, DIRECT);
+WiFiClient espClient;
+PubSubClient mqttClient(espClient);
 
 void setup()
 {
-  setupSerial(SERIAL_BAUD);
-  setupSsr(SSR_PIN);
-  setupTsic(
-      TSIC_BOILER_PIN,
-      TSIC_HEAD_PIN);
+  // serial
+  Serial.begin(SERIAL_BAUD);
 
-  setupPid(
-      PID_WINDOW,
-      PID_SETPOINT,
-      PID_COLDSTART,
-      PID_DUTY);
+  // wifi
+  WiFi.setHostname(HOSTNAME);
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  while (WiFi.status() != WL_CONNECTED)
+    delay(500);
 
-  setPidTuning(
-      PID_KP,
-      PID_KI,
-      PID_KD);
+  // solid state relay
+  pinMode(SSR_PIN, OUTPUT);
 
-  setupWifi(
-      HOSTNAME,
-      WIFI_SSID,
-      WIFI_PASS);
+  // tsic temperature probes
+  boilerSensor = TsicSensor::create(TSIC_BOILER_PIN, TsicExternalVcc, TsicType::TSIC_306);
+  headSensor = TsicSensor::create(TSIC_HEAD_PIN, TsicExternalVcc, TsicType::TSIC_306);
 
-  setupMqtt(
-      MQTT_IP,
-      MQTT_PORT,
-      MQTT_INTERVAL);
+  // pid
+  boilerPid.SetOutputLimits(0, pidWindowMs);
+  boilerPid.SetMode(AUTOMATIC);
+  boilerPid.SetTunings(pidKp, pidKi, pidKd);
 
-  setupMqttTopics(
-      MQTT_BOILER_TOPIC,
-      MQTT_HEAD_TOPIC,
-      MQTT_PID_TOPIC,
-      MQTT_HEATER_TOPIC);
+  // mqtt
+  mqttClient.setServer(MQTT_IP, MQTT_PORT);
+  if (!mqttClient.connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS))
+  {
+    Serial.println("MQTT connection failed.");
+  }
+  else
+  {
+    mqttClient.setCallback(callback);
 
-  connectMqtt(
-      MQTT_CLIENTID,
-      MQTT_USERNAME,
-      MQTT_PASSWORD);
+    mqttClient.subscribe(MQTT_TARGET_TOPIC);
+    mqttClient.subscribe(MQTT_COLDSTART_TOPIC);
+    mqttClient.subscribe(MQTT_WINDOW_TOPIC);
+    mqttClient.subscribe(MQTT_CYCLE_TOPIC);
+    mqttClient.subscribe(MQTT_P_TOPIC);
+    mqttClient.subscribe(MQTT_I_TOPIC);
+    mqttClient.subscribe(MQTT_D_TOPIC);
+  }
 
-  subscribeMqtt(
-      MQTT_TARGET_TOPIC,
-      MQTT_COLDSTART_TOPIC,
-      MQTT_WINDOW_TOPIC,
-      MQTT_CYCLE_TOPIC,
-      MQTT_P_TOPIC,
-      MQTT_I_TOPIC,
-      MQTT_D_TOPIC);
-
-  setupWebserver();
+  server.onNotFound([](AsyncWebServerRequest *request)
+                    { request->send(404, "text/plain", "Not found"); });
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(418, "text/plain", "I am a coffee machine."); });
+  AsyncElegantOTA.begin(&server);
+  server.begin();
 }
 
 void loop()
 {
-  ensure();
-  sense();
-  control();
+  ensureConnections();
+
+  // get temps
+  if (boilerSensor->newValueAvailable())
+    pidInput = boilerSensor->getTempCelsius();
+
+  if (headSensor->newValueAvailable())
+    headTemp = headSensor->getTempCelsius();
+
+  // compute pid
+  boilerPid.Compute();
+  long timeDelta = millis() - pidLoopStart;
+  if (timeDelta > pidWindowMs / pidDutyCycle)
+    pidLoopStart = millis();
+
+  pidControl = pidInput < pidColdstart ? 1 : pidOutput / pidWindowMs;
+  heaterState = pidInput < pidColdstart ? true : pidOutput > timeDelta;
+
+  // set ssr
+  digitalWrite(SSR_PIN, heaterState ? 1 : 0);
+
+  // publish sense and control values
+  if (millis() - mqttLoopStart > mqttWindowMs)
+  {
+    mqttLoopStart += mqttWindowMs;
+    mqttClient.publish(MQTT_BOILER_TOPIC, String(pidInput, 3).c_str());
+    mqttClient.publish(MQTT_HEAD_TOPIC, String(headTemp, 3).c_str());
+    mqttClient.publish(MQTT_PID_TOPIC, String(pidControl, 3).c_str());
+    mqttClient.publish(MQTT_HEATER_TOPIC, heaterState ? "1" : "0");
+  }
+
+  // update pid
+  boilerPid.SetTunings(pidKp, pidKi, pidKd);
 }
 
-void ensure()
+void callback(char *topic, byte *payload, unsigned int length)
 {
-  ensureWifi(WIFI_SSID, WIFI_PASS);
-  ensureMqtt(MQTT_CLIENTID, MQTT_USERNAME, MQTT_PASSWORD);
+  String message;
+  for (int i = 0; i < length; i++)
+    message += (char)payload[i];
+
+  double value = atof(message.c_str());
+
+  if (strcmp(topic, MQTT_TARGET_TOPIC) == 0)
+    pidSetpoint = value;
+
+  if (strcmp(topic, MQTT_COLDSTART_TOPIC) == 0)
+    pidColdstart = value;
+
+  if (strcmp(topic, MQTT_WINDOW_TOPIC) == 0)
+    pidWindowMs = value;
+
+  if (strcmp(topic, MQTT_CYCLE_TOPIC) == 0)
+    pidDutyCycle = value;
+
+  if (strcmp(topic, MQTT_P_TOPIC) == 0)
+    pidKp = value;
+
+  if (strcmp(topic, MQTT_I_TOPIC) == 0)
+    pidKi = value;
+
+  if (strcmp(topic, MQTT_D_TOPIC) == 0)
+    pidKd = value;
 }
 
-void sense()
+void ensureConnections()
 {
-  float headTemp = getTsicOneTemp();
-  float boilerTemp = getTsicTwoTemp();
-  bool heatState = updatePid(boilerTemp);
-  double pid = getPidOutput();
-  setSsr(heatState);
-  publish(boilerTemp, headTemp, pid);
-  publishState(heatState);
-}
+  // ensure wifi connection
+  int wifi_retry = 0;
+  while (WiFi.status() != WL_CONNECTED && wifi_retry < 5)
+  {
+    wifi_retry++;
+    WiFi.disconnect();
+    WiFi.mode(WIFI_OFF);
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(WIFI_SSID, WIFI_PASS);
+    delay(500);
+  }
 
-void control()
-{
-  double webSetpoint = getTarget();
-  double webColdstart = getColdstart();
-  double webWindow = getWindow();
-  double webCycle = getCycle();
-  double webKp = getPValue();
-  double webKi = getIValue();
-  double webKd = getDValue();
-  setPidTuning(webKp, webKi, webKp);
-  setPidParameters(webSetpoint, webColdstart, webWindow, webCycle);
-}
+  if (wifi_retry >= 5)
+    ESP.restart();
 
-void setupWebserver()
-{
-  server.onNotFound([](AsyncWebServerRequest *request){ request->send(404, "text/plain", "Not found"); });
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(418, "text/plain", "I am a coffee machine, not a teapot."); });
-  AsyncElegantOTA.begin(&server);
-  server.begin();
+  // ensure mqtt connection
+  mqttClient.loop();
+  if (!mqttClient.connected())
+  {
+    while (!mqttClient.connected())
+    {
+      mqttClient.connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS);
+      uint8_t timeout = 8;
+      while (timeout && (!mqttClient.connected()))
+      {
+        timeout--;
+        delay(1000);
+      }
+    }
+  }
 }
