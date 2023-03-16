@@ -13,11 +13,20 @@
 
 #define MQTT_CLIENTID "rancilio-silvia"
 #define MQTT_USERNAME "{{mqtt_username}}"
-#define MQTT_PASSWORD "{{mqtt_passwort}}"
+#define MQTT_PASSWORD "{{mqtt_password}}"
 
-#define MQTT_PID_TOPIC "lab/pid/control"
-#define MQTT_BOILER_TOPIC "lab/pid/boiler"
-#define MQTT_HEAD_TOPIC "lab/pid/head"
+#define MQTT_PID_TOPIC "kitchen/rancilio/control"
+#define MQTT_BOILER_TOPIC "kitchen/rancilio/boiler"
+#define MQTT_HEAD_TOPIC "kitchen/rancilio/head"
+#define MQTT_HEATER_TOPIC "kitchen/rancilio/state"
+
+#define MQTT_TARGET_TOPIC "hassio/input_number/kitchen_rancilio_target_temperature/state"
+#define MQTT_COLDSTART_TOPIC "hassio/input_number/kitchen_rancilio_coldstart_temperature/state"
+#define MQTT_WINDOW_TOPIC "hassio/input_number/kitchen_rancilio_duty_window/state"
+#define MQTT_CYCLE_TOPIC "hassio/input_number/kitchen_rancilio_duty_cycle/state"
+#define MQTT_P_TOPIC "hassio/input_number/kitchen_rancilio_p_value/state"
+#define MQTT_I_TOPIC "hassio/input_number/kitchen_rancilio_i_value/state"
+#define MQTT_D_TOPIC "hassio/input_number/kitchen_rancilio_d_value/state"
 
 #define PID_WINDOW 1000
 #define PID_SETPOINT 90
@@ -33,31 +42,74 @@
 #define WIFI_SSID "{{wifi_ssid}}"
 #define WIFI_PASS "{{wifi_password}}"
 
-double webKp, webKi, webKd, webWindow, webCycle, webColdstart, webSetpoint;
+AsyncWebServer server(80);
 
 void setup()
 {
   setupSerial(SERIAL_BAUD);
-  setupLed(LED_BUILTIN);
   setupSsr(SSR_PIN);
-  setupTsic(TSIC_BOILER_PIN, TSIC_HEAD_PIN);
-  setupPid(PID_WINDOW, PID_SETPOINT, PID_COLDSTART, PID_DUTY);
-  setPidTuning(PID_KP, PID_KI, PID_KD);
-  webKp = PID_KP;
-  webKi = PID_KI;
-  webKd = PID_KD;
-  webWindow = PID_WINDOW;
-  webCycle = PID_DUTY;
-  webColdstart = PID_COLDSTART;
-  webSetpoint = PID_SETPOINT;
-  setupWifi(HOSTNAME, WIFI_SSID, WIFI_PASS);
-  setupMqtt(MQTT_IP, MQTT_PORT, MQTT_INTERVAL);
-  setupMqttTopics(MQTT_BOILER_TOPIC, MQTT_HEAD_TOPIC, MQTT_PID_TOPIC);
-  connectMqtt(MQTT_CLIENTID, MQTT_USERNAME, MQTT_PASSWORD);
+  setupTsic(
+      TSIC_BOILER_PIN,
+      TSIC_HEAD_PIN);
+
+  setupPid(
+      PID_WINDOW,
+      PID_SETPOINT,
+      PID_COLDSTART,
+      PID_DUTY);
+
+  setPidTuning(
+      PID_KP,
+      PID_KI,
+      PID_KD);
+
+  setupWifi(
+      HOSTNAME,
+      WIFI_SSID,
+      WIFI_PASS);
+
+  setupMqtt(
+      MQTT_IP,
+      MQTT_PORT,
+      MQTT_INTERVAL);
+
+  setupMqttTopics(
+      MQTT_BOILER_TOPIC,
+      MQTT_HEAD_TOPIC,
+      MQTT_PID_TOPIC,
+      MQTT_HEATER_TOPIC);
+
+  connectMqtt(
+      MQTT_CLIENTID,
+      MQTT_USERNAME,
+      MQTT_PASSWORD);
+
+  subscribeMqtt(
+      MQTT_TARGET_TOPIC,
+      MQTT_COLDSTART_TOPIC,
+      MQTT_WINDOW_TOPIC,
+      MQTT_CYCLE_TOPIC,
+      MQTT_P_TOPIC,
+      MQTT_I_TOPIC,
+      MQTT_D_TOPIC);
+
   setupWebserver();
 }
 
 void loop()
+{
+  ensure();
+  sense();
+  control();
+}
+
+void ensure()
+{
+  ensureWifi(WIFI_SSID, WIFI_PASS);
+  ensureMqtt(MQTT_CLIENTID, MQTT_USERNAME, MQTT_PASSWORD);
+}
+
+void sense()
 {
   float headTemp = getTsicOneTemp();
   float boilerTemp = getTsicTwoTemp();
@@ -66,122 +118,26 @@ void loop()
   setSsr(heatState);
   publish(boilerTemp, headTemp, pid);
   publishState(heatState);
-  updateLed();
-  ensureWifi(WIFI_SSID, WIFI_PASS);
-  ensureMqtt(MQTT_CLIENTID, MQTT_USERNAME, MQTT_PASSWORD);
+}
+
+void control()
+{
+  double webSetpoint = getTarget();
+  double webColdstart = getColdstart();
+  double webWindow = getWindow();
+  double webCycle = getCycle();
+  double webKp = getPValue();
+  double webKi = getIValue();
+  double webKd = getDValue();
   setPidTuning(webKp, webKi, webKp);
   setPidParameters(webSetpoint, webColdstart, webWindow, webCycle);
 }
 
-AsyncWebServer server(80);
-const char *input_parameter1 = "kp";
-const char *input_parameter2 = "ki";
-const char *input_parameter3 = "kd";
-const char *input_parameter4 = "window";
-const char *input_parameter5 = "cycle";
-const char *input_parameter6 = "coldstart";
-const char *input_parameter7 = "setpoint";
-
-const char index_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE HTML><html><head>
-  <title>PID Tuning</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    html {font-family: Verdana; display: inline-block; text-align: center;}
-    h2 {font-size: 3.0rem;}
-  </style>
-  </head><body>
-  <h2>Tuning Parameters</h2> 
-  <form action="/get">
-    kP <input type="text" name="kp">
-    <input type="submit" value="Submit">
-  </form><br>
-  <form action="/get">
-    kI: <input type="text" name="ki">
-    <input type="submit" value="Submit">
-  </form><br>
-  <form action="/get">
-    kD: <input type="text" name="kd">
-    <input type="submit" value="Submit">
-  </form><br>
-  <form action="/get">
-    Window: <input type="text" name="window">
-    <input type="submit" value="Submit">
-  </form><br>
-  <form action="/get">
-    Cycle: <input type="text" name="cycle">
-    <input type="submit" value="Submit">
-  </form><br>
-  <form action="/get">
-    Setpoint: <input type="text" name="setpoint">
-    <input type="submit" value="Submit">
-  </form><br>
-  <form action="/get">
-    Coldstart: <input type="text" name="coldstart">
-    <input type="submit" value="Submit">
-  </form>
-</body></html>)rawliteral";
-
-void notFound(AsyncWebServerRequest *request)
-{
-  request->send(404, "text/plain", "Not found");
-}
-
 void setupWebserver()
 {
-  server.onNotFound(notFound);
+  server.onNotFound([](AsyncWebServerRequest *request){ request->send(404, "text/plain", "Not found"); });
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(418, "text/plain", "I am a coffee machine."); });
-  server.on("/tune", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send_P(200, "text/html", index_html); });
-  server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-              String message;
-              if (request->hasParam(input_parameter1)) {
-                message = request->getParam(input_parameter1)->value();
-                webKp = message.toDouble();
-              }
-              else if (request->hasParam(input_parameter2)) {
-                message = request->getParam(input_parameter2)->value();
-                webKi = message.toDouble();
-              }
-              else if (request->hasParam(input_parameter3)) {
-                message = request->getParam(input_parameter3)->value();
-                webKd = message.toDouble();
-              }
-              else if (request->hasParam(input_parameter4)) {
-                message = request->getParam(input_parameter4)->value();
-                webWindow = message.toDouble();
-              }
-              else if (request->hasParam(input_parameter5)) {
-                message = request->getParam(input_parameter5)->value();
-                webCycle = message.toDouble();
-              }
-              else if (request->hasParam(input_parameter6)) {
-                message = request->getParam(input_parameter6)->value();
-                webColdstart = message.toDouble();
-              }
-              else if (request->hasParam(input_parameter7)) {
-                message = request->getParam(input_parameter7)->value();
-                webSetpoint = message.toDouble();
-              }
-              
-              request->redirect("/tune"); });
-
-  server.on("/config", HTTP_GET, [](AsyncWebServerRequest *request)
-            { request->send(200, "text/html", printConfig()); });
-
+            { request->send(418, "text/plain", "I am a coffee machine, not a teapot."); });
   AsyncElegantOTA.begin(&server);
   server.begin();
-}
-
-String printConfig()
-{
-  return "P: " + String(webKp,2) + "<br />"
-  + "I: " + String(webKi,2) + "<br />"
-  + "D: " + String(webKd,2) + "<br />"
-  + "Setpoint: " + String(webSetpoint,2) + "<br />"
-  + "Coldstart: " + String(webColdstart,2) + "<br />"
-  + "Window: " + String(webWindow,2) + "<br />"
-  + "Cycle: " + String(webCycle,2) + "<br />";
 }
