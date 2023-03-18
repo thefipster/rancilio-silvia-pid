@@ -2,34 +2,44 @@
 #define MQTTTOPICS_H
 
 // Server & Client
-#define MQTT_IP IPAddress(192, 168, 0, 128)
+#define MQTT_IP IPAddress(192, 168, 1, 234)
 #define MQTT_PORT 1883
-#define MQTT_CLIENTID "pid-coffeemachine"
+#define MQTT_CLIENTID "rancilio-silvia"
 #define MQTT_RETRY_LIMIT 5
-#define MQTT_PUBLISH_INTERVAL_MS 500
+
+// Message intervals
+#define MQTT_PUBLISH_INTERVAL_MS 200
 #define MQTT_HEARTBEAT_INTERVAL_MS 1000
 
-// Publish topics
+// Availability topics
+#define MQTT_STATE_TOPIC ""
+
+// Sensor topics
 #define MQTT_PID_TOPIC ""
 #define MQTT_BOILER_TOPIC ""
 #define MQTT_HEAD_TOPIC ""
 #define MQTT_HEATER_TOPIC ""
-#define MQTT_CYCLE_GET_TOPIC ""
-#define MQTT_WINDOW_GET_TOPIC ""
-#define MQTT_TARGET_GET_TOPIC ""
-#define MQTT_COLD_GET_TOPIC ""
-#define MQTT_P_GET_TOPIC ""
-#define MQTT_I_GET_TOPIC ""
-#define MQTT_D_GET_TOPIC ""
-#define MQTT_STATE_TOPIC ""
 
-// Subscribe topics
-#define MQTT_TARGET_TOPIC ""
-#define MQTT_COLDSTART_TOPIC ""
-#define MQTT_WINDOW_TOPIC ""
-#define MQTT_CYCLE_TOPIC ""
-#define MQTT_P_TOPIC ""
-#define MQTT_I_TOPIC ""
-#define MQTT_D_TOPIC ""
+// Control topics
+#define MQTT_CYCLE_PUB_TOPIC ""
+#define MQTT_CYCLE_SUB_TOPIC ""
+
+#define MQTT_WINDOW_PUB_TOPIC ""
+#define MQTT_WINDOW_SUB_TOPIC ""
+
+#define MQTT_TARGET_PUB_TOPIC ""
+#define MQTT_TARGET_SUB_TOPIC ""
+
+#define MQTT_COLDSTART_PUB_TOPIC ""
+#define MQTT_COLDSTART_SUB_TOPIC ""
+
+#define MQTT_P_PUB_TOPIC ""
+#define MQTT_P_SUB_TOPIC ""
+
+#define MQTT_I_PUB_TOPIC ""
+#define MQTT_I_SUB_TOPIC ""
+
+#define MQTT_D_PUB_TOPIC ""
+#define MQTT_D_SUB_TOPIC ""
 
 #endif
