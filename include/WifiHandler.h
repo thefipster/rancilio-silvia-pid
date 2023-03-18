@@ -3,6 +3,7 @@
 
 #include <WiFi.h>
 #include <Credentials.h>
+#include <Defaults.h>
 
 class WifiHandler
 {

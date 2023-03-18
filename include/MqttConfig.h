@@ -6,6 +6,8 @@
 #define MQTT_PORT 1883
 #define MQTT_INTERVAL 1000
 #define MQTT_CLIENTID "rancilio-silvia"
+#define MQTT_RETRY_LIMIT 5
+#define MQTT_PUBLISH_INTERVAL_MS 1000
 
 // Publish topics
 #define MQTT_PID_TOPIC "kitchen/rancilio/control"

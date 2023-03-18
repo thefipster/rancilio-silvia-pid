@@ -11,6 +11,6 @@
 
 #define SERIAL_BAUD 115200
 
-#define MQTT_PUBLISH_INTERVAL_MS 1000
+#define WIFI_RETRY_LIMIT 5
 
-#endif
+#endif 
