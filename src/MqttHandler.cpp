@@ -15,13 +15,13 @@ bool MqttHandler::Connect()
 
 void MqttHandler::Subscribe()
 {
-    client->subscribe(MQTT_TARGET_TOPIC);
-    client->subscribe(MQTT_COLDSTART_TOPIC);
-    client->subscribe(MQTT_WINDOW_TOPIC);
-    client->subscribe(MQTT_CYCLE_TOPIC);
-    client->subscribe(MQTT_P_TOPIC);
-    client->subscribe(MQTT_I_TOPIC);
-    client->subscribe(MQTT_D_TOPIC);
+    client->subscribe(MQTT_TARGET_SUB_TOPIC);
+    client->subscribe(MQTT_COLDSTART_SUB_TOPIC);
+    client->subscribe(MQTT_WINDOW_SUB_TOPIC);
+    client->subscribe(MQTT_CYCLE_SUB_TOPIC);
+    client->subscribe(MQTT_P_SUB_TOPIC);
+    client->subscribe(MQTT_I_SUB_TOPIC);
+    client->subscribe(MQTT_D_SUB_TOPIC);
 }
 
 bool MqttHandler::Loop()
@@ -85,25 +85,25 @@ void MqttHandler::publish()
         client->publish(MQTT_HEATER_TOPIC, model->heaterState ? "1" : "0");
 
     if (controls->setpoint != oldControls.setpoint)
-        client->publish(MQTT_TARGET_GET_TOPIC, String(controls->setpoint, 3).c_str());
+        client->publish(MQTT_TARGET_PUB_TOPIC, String(controls->setpoint, 3).c_str());
 
     if (controls->coldstart != oldControls.coldstart)
-        client->publish(MQTT_COLD_GET_TOPIC, String(controls->coldstart, 3).c_str());
+        client->publish(MQTT_COLDSTART_PUB_TOPIC, String(controls->coldstart, 3).c_str());
 
     if (controls->windowMs != oldControls.windowMs)
-        client->publish(MQTT_WINDOW_GET_TOPIC, String(controls->windowMs, 3).c_str());
+        client->publish(MQTT_WINDOW_PUB_TOPIC, String(controls->windowMs, 3).c_str());
 
     if (controls->dutyCycle != oldControls.dutyCycle)
-        client->publish(MQTT_CYCLE_GET_TOPIC, String(controls->dutyCycle, 3).c_str());
+        client->publish(MQTT_CYCLE_PUB_TOPIC, String(controls->dutyCycle, 3).c_str());
 
     if (controls->kP != oldControls.kP)
-        client->publish(MQTT_P_GET_TOPIC, String(controls->kP, 3).c_str());
+        client->publish(MQTT_P_PUB_TOPIC, String(controls->kP, 3).c_str());
 
     if (controls->kI != oldControls.kI)
-        client->publish(MQTT_I_GET_TOPIC, String(controls->kI, 3).c_str());
+        client->publish(MQTT_I_PUB_TOPIC, String(controls->kI, 3).c_str());
 
     if (controls->kD != oldControls.kD)
-        client->publish(MQTT_D_GET_TOPIC, String(controls->kD, 3).c_str());
+        client->publish(MQTT_D_PUB_TOPIC, String(controls->kD, 3).c_str());
 
     oldControls.copyFrom(*controls);
     oldModel.copyFrom(*model);
@@ -117,24 +117,24 @@ void MqttHandler::Callback(char *topic, byte *payload, unsigned int length)
 
     double value = atof(message.c_str());
 
-    if (strcmp(topic, MQTT_TARGET_TOPIC) == 0)
+    if (strcmp(topic, MQTT_TARGET_SUB_TOPIC) == 0)
         controls->setpoint = value;
 
-    if (strcmp(topic, MQTT_COLDSTART_TOPIC) == 0)
+    if (strcmp(topic, MQTT_COLDSTART_SUB_TOPIC) == 0)
         controls->coldstart = value;
 
-    if (strcmp(topic, MQTT_WINDOW_TOPIC) == 0)
+    if (strcmp(topic, MQTT_WINDOW_SUB_TOPIC) == 0)
         controls->windowMs = value;
 
-    if (strcmp(topic, MQTT_CYCLE_TOPIC) == 0)
+    if (strcmp(topic, MQTT_CYCLE_SUB_TOPIC) == 0)
         controls->dutyCycle = value;
 
-    if (strcmp(topic, MQTT_P_TOPIC) == 0)
+    if (strcmp(topic, MQTT_P_SUB_TOPIC) == 0)
         controls->kP = value;
 
-    if (strcmp(topic, MQTT_I_TOPIC) == 0)
+    if (strcmp(topic, MQTT_I_SUB_TOPIC) == 0)
         controls->kI = value;
 
-    if (strcmp(topic, MQTT_D_TOPIC) == 0)
+    if (strcmp(topic, MQTT_D_SUB_TOPIC) == 0)
         controls->kD = value;
 }
