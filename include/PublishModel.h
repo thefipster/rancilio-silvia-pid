@@ -7,6 +7,14 @@ struct PublishModel
     double headTemp;
     double pidControl;
     bool heaterState;
+
+    void copyFrom(PublishModel model)
+    {
+        boilerTemp = model.boilerTemp;
+        headTemp = model.headTemp;
+        pidControl = model.pidControl;
+        heaterState = model.heaterState;
+    }
 };
 
 #endif

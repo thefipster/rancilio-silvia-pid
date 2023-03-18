@@ -4,10 +4,10 @@
 // Server & Client
 #define MQTT_IP IPAddress(192, 168, 0, 128)
 #define MQTT_PORT 1883
-#define MQTT_INTERVAL 1000
 #define MQTT_CLIENTID "pid-coffeemachine"
 #define MQTT_RETRY_LIMIT 5
-#define MQTT_PUBLISH_INTERVAL_MS 1000
+#define MQTT_PUBLISH_INTERVAL_MS 500
+#define MQTT_HEARTBEAT_INTERVAL_MS 1000
 
 // Publish topics
 #define MQTT_PID_TOPIC ""
@@ -21,6 +21,7 @@
 #define MQTT_P_GET_TOPIC ""
 #define MQTT_I_GET_TOPIC ""
 #define MQTT_D_GET_TOPIC ""
+#define MQTT_STATE_TOPIC ""
 
 // Subscribe topics
 #define MQTT_TARGET_TOPIC ""
