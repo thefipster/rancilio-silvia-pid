@@ -11,7 +11,14 @@
 #define MQTT_PID_TOPIC "kitchen/rancilio/control"
 #define MQTT_BOILER_TOPIC "kitchen/rancilio/boiler"
 #define MQTT_HEAD_TOPIC "kitchen/rancilio/head"
-#define MQTT_HEATER_TOPIC "kitchen/rancilio/state"
+#define MQTT_HEATER_TOPIC "kitchen/rancilio/heater"
+#define MQTT_CYCLE_GET_TOPIC "kitchen/rancilio/cycle"
+#define MQTT_WINDOW_GET_TOPIC "kitchen/rancilio/window"
+#define MQTT_TARGET_GET_TOPIC "kitchen/rancilio/setpoint"
+#define MQTT_COLD_GET_TOPIC "kitchen/rancilio/coldstart"
+#define MQTT_P_GET_TOPIC "kitchen/rancilio/kP"
+#define MQTT_I_GET_TOPIC "kitchen/rancilio/kI"
+#define MQTT_D_GET_TOPIC "kitchen/rancilio/kD"
 
 // Subscribe topics
 #define MQTT_TARGET_TOPIC "hassio/input_number/kitchen_rancilio_target_temperature/state"

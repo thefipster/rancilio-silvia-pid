@@ -83,6 +83,15 @@ void mqttPublish()
     mqttClient.publish(MQTT_HEAD_TOPIC, String(model.headTemp, 3).c_str());
     mqttClient.publish(MQTT_PID_TOPIC, String(model.pidControl, 3).c_str());
     mqttClient.publish(MQTT_HEATER_TOPIC, model.heaterState ? "1" : "0");
+
+    mqttClient.publish(MQTT_TARGET_GET_TOPIC, String(control.setpoint, 3).c_str());
+    mqttClient.publish(MQTT_COLD_GET_TOPIC, String(control.coldstart, 3).c_str());
+    mqttClient.publish(MQTT_WINDOW_GET_TOPIC, String(control.windowMs, 3).c_str());
+    mqttClient.publish(MQTT_CYCLE_GET_TOPIC, String(control.dutyCycle, 3).c_str());
+    mqttClient.publish(MQTT_P_GET_TOPIC, String(control.kP, 3).c_str());
+    mqttClient.publish(MQTT_I_GET_TOPIC, String(control.kI, 3).c_str());
+    mqttClient.publish(MQTT_D_GET_TOPIC, String(control.kD, 3).c_str());
+
     Serial.print(".");
   }
 }
