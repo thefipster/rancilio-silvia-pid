@@ -107,8 +107,6 @@ void MqttHandler::publish()
 
     oldControls.copyFrom(*controls);
     oldModel.copyFrom(*model);
-
-    Serial.print(".");
 }
 
 void MqttHandler::Callback(char *topic, byte *payload, unsigned int length)
@@ -118,9 +116,6 @@ void MqttHandler::Callback(char *topic, byte *payload, unsigned int length)
         message += (char)payload[i];
 
     double value = atof(message.c_str());
-    Serial.print(".");
-    Serial.print(value);
-    Serial.print(".");
 
     if (strcmp(topic, MQTT_TARGET_TOPIC) == 0)
         controls->setpoint = value;
@@ -142,23 +137,4 @@ void MqttHandler::Callback(char *topic, byte *payload, unsigned int length)
 
     if (strcmp(topic, MQTT_D_TOPIC) == 0)
         controls->kD = value;
-}
-
-void MqttHandler::copyModel()
-{
-    oldModel.boilerTemp = model->boilerTemp;
-    oldModel.headTemp = model->headTemp;
-    oldModel.heaterState = model->heaterState;
-    oldModel.pidControl = model->pidControl;
-}
-
-void MqttHandler::copyControls()
-{
-    oldControls.coldstart = controls->coldstart;
-    oldControls.coldstart = controls->coldstart;
-    oldControls.coldstart = controls->coldstart;
-    oldControls.coldstart = controls->coldstart;
-    oldControls.coldstart = controls->coldstart;
-    oldControls.coldstart = controls->coldstart;
-    oldControls.coldstart = controls->coldstart;
 }
