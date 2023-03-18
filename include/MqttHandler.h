@@ -30,12 +30,16 @@ private:
     PublishModel oldModel;
 
     unsigned long publishIntervalInMs = MQTT_PUBLISH_INTERVAL_MS;
-    unsigned long intervalStart = 0;
+    unsigned long loopStart = 0;
+
+    unsigned long heartbeatIntervalInMs = MQTT_HEARTBEAT_INTERVAL_MS;
+    unsigned long heartbeatStart = 0;
 
     void copyModel();
     void copyControls();
     bool reconnect();
     void publish();
+    void heartbeat();
 };
 
 #endif

@@ -26,17 +26,21 @@ void MqttHandler::Subscribe()
 
 bool MqttHandler::Loop()
 {
-    bool state = true;
-
-    state = state && client->loop();
+    bool ok = client->loop();
 
     if (!client->connected())
-        state = state && reconnect();
+        ok = reconnect();
 
-    if (millis() - intervalStart > publishIntervalInMs)
+    if (!ok)
+        return false;
+
+    if (millis() - heartbeatStart > heartbeatIntervalInMs)
+        heartbeat();
+
+    if (millis() - loopStart > publishIntervalInMs)
         publish();
 
-    return state;
+    return true;
 }
 
 bool MqttHandler::reconnect()
@@ -47,7 +51,7 @@ bool MqttHandler::reconnect()
         while (tries < MQTT_RETRY_LIMIT && !client->connected())
         {
             client->connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS);
-            uint8_t timeout = 5;
+            uint8_t timeout = 5;    
             while (timeout && (!client->connected()))
             {
                 timeout--;
@@ -59,21 +63,50 @@ bool MqttHandler::reconnect()
     return tries < MQTT_RETRY_LIMIT ? true : false;
 }
 
+void MqttHandler::heartbeat()
+{
+    client->publish(MQTT_STATE_TOPIC, "on");
+}
+
 void MqttHandler::publish()
 {
-    intervalStart = millis();
+    loopStart = millis();
 
-    client->publish(MQTT_BOILER_TOPIC, String(model->boilerTemp, 3).c_str());
-    client->publish(MQTT_HEAD_TOPIC, String(model->headTemp, 3).c_str());
-    client->publish(MQTT_PID_TOPIC, String(model->pidControl, 3).c_str());
-    client->publish(MQTT_HEATER_TOPIC, model->heaterState ? "1" : "0");
-    client->publish(MQTT_TARGET_GET_TOPIC, String(controls->setpoint, 3).c_str());
-    client->publish(MQTT_COLD_GET_TOPIC, String(controls->coldstart, 3).c_str());
-    client->publish(MQTT_WINDOW_GET_TOPIC, String(controls->windowMs, 3).c_str());
-    client->publish(MQTT_CYCLE_GET_TOPIC, String(controls->dutyCycle, 3).c_str());
-    client->publish(MQTT_P_GET_TOPIC, String(controls->kP, 3).c_str());
-    client->publish(MQTT_I_GET_TOPIC, String(controls->kI, 3).c_str());
-    client->publish(MQTT_D_GET_TOPIC, String(controls->kD, 3).c_str());
+    if (model->boilerTemp != oldModel.boilerTemp)
+        client->publish(MQTT_BOILER_TOPIC, String(model->boilerTemp, 3).c_str());
+
+    if (model->headTemp != oldModel.headTemp)
+        client->publish(MQTT_HEAD_TOPIC, String(model->headTemp, 3).c_str());
+
+    if (model->pidControl != oldModel.pidControl)
+        client->publish(MQTT_PID_TOPIC, String(model->pidControl, 3).c_str());
+
+    if (model->heaterState != oldModel.heaterState)
+        client->publish(MQTT_HEATER_TOPIC, model->heaterState ? "1" : "0");
+
+    if (controls->setpoint != oldControls.setpoint)
+        client->publish(MQTT_TARGET_GET_TOPIC, String(controls->setpoint, 3).c_str());
+
+    if (controls->coldstart != oldControls.coldstart)
+        client->publish(MQTT_COLD_GET_TOPIC, String(controls->coldstart, 3).c_str());
+
+    if (controls->windowMs != oldControls.windowMs)
+        client->publish(MQTT_WINDOW_GET_TOPIC, String(controls->windowMs, 3).c_str());
+
+    if (controls->dutyCycle != oldControls.dutyCycle)
+        client->publish(MQTT_CYCLE_GET_TOPIC, String(controls->dutyCycle, 3).c_str());
+
+    if (controls->kP != oldControls.kP)
+        client->publish(MQTT_P_GET_TOPIC, String(controls->kP, 3).c_str());
+
+    if (controls->kI != oldControls.kI)
+        client->publish(MQTT_I_GET_TOPIC, String(controls->kI, 3).c_str());
+
+    if (controls->kD != oldControls.kD)
+        client->publish(MQTT_D_GET_TOPIC, String(controls->kD, 3).c_str());
+
+    oldControls.copyFrom(*controls);
+    oldModel.copyFrom(*model);
 
     Serial.print(".");
 }
@@ -117,4 +150,15 @@ void MqttHandler::copyModel()
     oldModel.headTemp = model->headTemp;
     oldModel.heaterState = model->heaterState;
     oldModel.pidControl = model->pidControl;
+}
+
+void MqttHandler::copyControls()
+{
+    oldControls.coldstart = controls->coldstart;
+    oldControls.coldstart = controls->coldstart;
+    oldControls.coldstart = controls->coldstart;
+    oldControls.coldstart = controls->coldstart;
+    oldControls.coldstart = controls->coldstart;
+    oldControls.coldstart = controls->coldstart;
+    oldControls.coldstart = controls->coldstart;
 }
