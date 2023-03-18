@@ -1,16 +1,16 @@
 #ifndef MQTTHANDLER_H
 #define MQTTHANDLER_H
 
-#include <Arduino.h>
-#include <WiFi.h>
-#include <PubSubClient.h>
+#include <Credentials.h>
+#include <Defaults.h>
+#include <MqttConfig.h>
 
 #include <ControlModel.h>
 #include <PublishModel.h>
 
-#include <Credentials.h>
-#include <Defaults.h>
-#include <MqttConfig.h>
+#include <Arduino.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
 
 class MqttHandler
 {

@@ -51,7 +51,7 @@ bool MqttHandler::reconnect()
         while (tries < MQTT_RETRY_LIMIT && !client->connected())
         {
             client->connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS);
-            uint8_t timeout = 5;    
+            uint8_t timeout = 5;
             while (timeout && (!client->connected()))
             {
                 timeout--;
