@@ -13,6 +13,7 @@ Controller::Controller(ControlModel *controlModel, PublishModel *publishModel)
   groupheadSensor = TsicSensor::create(TSIC_HEAD_PIN, TsicExternalVcc, TsicType::TSIC_306);
 
   pid = new PID(&input, &output, &setpoint, KP, KI, KD, DIRECT);
+  pid->SetMode(AUTOMATIC);
 }
 
 void Controller::Loop()
@@ -39,7 +40,6 @@ void Controller::updateParameters()
   setpoint = controlModel->setpoint;
 
   pid->SetOutputLimits(0, controlModel->windowMs);
-  pid->SetMode(AUTOMATIC);
   pid->SetTunings(controlModel->kP, controlModel->kI, controlModel->kD);
 }
 
