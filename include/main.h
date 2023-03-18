@@ -1,26 +1,22 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-// Dependencies
-#include <Arduino.h>
-#include <AsyncElegantOTA.h>
-#include <PubSubClient.h>
-
-// Logic
-#include <Controller.h>
-#include <HttpHandler.h>
-#include <MqttHandler.h>
-#include <WifiHandler.h>
-
-// Models
-#include <ControlModel.h>
-#include <PublishModel.h>
-
-// Settings
 #include <Credentials.h>
 #include <Defaults.h>
 #include <MqttConfig.h>
 #include <Pins.h>
+
+#include <ControlModel.h>
+#include <PublishModel.h>
+
+#include <Arduino.h>
+#include <AsyncElegantOTA.h>
+#include <PubSubClient.h>
+
+#include <Controller.h>
+#include <HttpHandler.h>
+#include <MqttHandler.h>
+#include <WifiHandler.h>
 
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);

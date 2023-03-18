@@ -1,22 +1,22 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#include <Arduino.h>
-#include <PID_v1.h>
-#include <TsicSensor.h>
+#include <Defaults.h>
+#include <Pins.h>
 
 #include <ControlModel.h>
 #include <PublishModel.h>
 
-#include <Defaults.h>
-#include <Pins.h>
+#include <Arduino.h>
+#include <PID_v1.h>
+#include <TsicSensor.h>
 
 class Controller
 {
 
 public:
-    Controller(ControlModel* controls, PublishModel* publish);
-    
+    Controller(ControlModel *controls, PublishModel *publish);
+
     void Loop();
 
 private:

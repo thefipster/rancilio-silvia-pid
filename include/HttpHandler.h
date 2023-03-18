@@ -11,7 +11,7 @@ public:
     AsyncWebServer *server;
 
     HttpHandler();
-    
+
     void Begin();
 };
 

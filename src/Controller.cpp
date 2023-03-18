@@ -1,6 +1,6 @@
 #include <Controller.h>
 
-Controller::Controller(ControlModel* controlModel, PublishModel* publishModel)
+Controller::Controller(ControlModel *controlModel, PublishModel *publishModel)
 {
   setpoint = SETPOINT;
 
