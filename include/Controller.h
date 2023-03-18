@@ -5,10 +5,11 @@
 #include <PID_v1.h>
 #include <TsicSensor.h>
 
-#include <Pins.h>
-#include <Defaults.h>
-#include <PublishModel.h>
 #include <ControlModel.h>
+#include <PublishModel.h>
+
+#include <Defaults.h>
+#include <Pins.h>
 
 class Controller
 {
@@ -26,11 +27,11 @@ private:
     double setpoint;
     unsigned long loopStart = 0;
 
-    TsicSensor *boiler;
-    TsicSensor *grouphead;
+    TsicSensor *boilerSensor;
+    TsicSensor *groupheadSensor;
 
-    PublishModel *publish;
-    ControlModel *controls;
+    PublishModel *publishModel;
+    ControlModel *controlModel;
 
     void readTemps();
     void updateParameters();

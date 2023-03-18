@@ -1,0 +1,34 @@
+#ifndef MQTTTOPICS_H
+#define MQTTTOPICS_H
+
+// Server & Client
+#define MQTT_IP IPAddress(192, 168, 0, 128)
+#define MQTT_PORT 1883
+#define MQTT_INTERVAL 1000
+#define MQTT_CLIENTID "pid-coffeemachine"
+#define MQTT_RETRY_LIMIT 5
+#define MQTT_PUBLISH_INTERVAL_MS 1000
+
+// Publish topics
+#define MQTT_PID_TOPIC ""
+#define MQTT_BOILER_TOPIC ""
+#define MQTT_HEAD_TOPIC ""
+#define MQTT_HEATER_TOPIC ""
+#define MQTT_CYCLE_GET_TOPIC ""
+#define MQTT_WINDOW_GET_TOPIC ""
+#define MQTT_TARGET_GET_TOPIC ""
+#define MQTT_COLD_GET_TOPIC ""
+#define MQTT_P_GET_TOPIC ""
+#define MQTT_I_GET_TOPIC ""
+#define MQTT_D_GET_TOPIC ""
+
+// Subscribe topics
+#define MQTT_TARGET_TOPIC ""
+#define MQTT_COLDSTART_TOPIC ""
+#define MQTT_WINDOW_TOPIC ""
+#define MQTT_CYCLE_TOPIC ""
+#define MQTT_P_TOPIC ""
+#define MQTT_I_TOPIC ""
+#define MQTT_D_TOPIC ""
+
+#endif

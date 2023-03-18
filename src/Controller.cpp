@@ -1,16 +1,16 @@
 #include <Controller.h>
 
-Controller::Controller(ControlModel* controls, PublishModel* publish)
+Controller::Controller(ControlModel* controlModel, PublishModel* publishModel)
 {
   setpoint = SETPOINT;
 
-  this->controls = controls;
-  this->publish = publish;
+  this->controlModel = controlModel;
+  this->publishModel = publishModel;
 
   pinMode(SSR_PIN, OUTPUT);
 
-  boiler = TsicSensor::create(TSIC_BOILER_PIN, TsicExternalVcc, TsicType::TSIC_306);
-  grouphead = TsicSensor::create(TSIC_HEAD_PIN, TsicExternalVcc, TsicType::TSIC_306);
+  boilerSensor = TsicSensor::create(TSIC_BOILER_PIN, TsicExternalVcc, TsicType::TSIC_306);
+  groupheadSensor = TsicSensor::create(TSIC_HEAD_PIN, TsicExternalVcc, TsicType::TSIC_306);
 
   pid = new PID(&input, &output, &setpoint, KP, KI, KD, DIRECT);
 }
@@ -21,34 +21,34 @@ void Controller::Loop()
   updateParameters();
   pid->Compute();
   evaluate();
-  digitalWrite(SSR_PIN, publish->heaterState ? 1 : 0);
+  digitalWrite(SSR_PIN, publishModel->heaterState ? 1 : 0);
 }
 
 void Controller::readTemps()
 {
-  if (boiler->newValueAvailable())
-    publish->boilerTemp = boiler->getTempCelsius();
+  if (boilerSensor->newValueAvailable())
+    publishModel->boilerTemp = boilerSensor->getTempCelsius();
 
-  if (grouphead->newValueAvailable())
-    publish->headTemp = grouphead->getTempCelsius();
+  if (groupheadSensor->newValueAvailable())
+    publishModel->headTemp = groupheadSensor->getTempCelsius();
 }
 
 void Controller::updateParameters()
 {
-  input = publish->boilerTemp;
-  setpoint = controls->setpoint;
+  input = publishModel->boilerTemp;
+  setpoint = controlModel->setpoint;
 
-  pid->SetOutputLimits(0, controls->windowMs);
+  pid->SetOutputLimits(0, controlModel->windowMs);
   pid->SetMode(AUTOMATIC);
-  pid->SetTunings(controls->kP, controls->kI, controls->kD);
+  pid->SetTunings(controlModel->kP, controlModel->kI, controlModel->kD);
 }
 
 void Controller::evaluate()
 {
   long timeDelta = millis() - loopStart;
-  if (timeDelta > controls->windowMs / controls->dutyCycle)
+  if (timeDelta > controlModel->windowMs / controlModel->dutyCycle)
     loopStart = millis();
 
-  publish->pidControl = input < controls->coldstart ? 1 : output / controls->windowMs;
-  publish->heaterState = input < controls->coldstart ? true : output > timeDelta;
+  publishModel->pidControl = input < controlModel->coldstart ? 1 : output / controlModel->windowMs;
+  publishModel->heaterState = input < controlModel->coldstart ? true : output > timeDelta;
 }

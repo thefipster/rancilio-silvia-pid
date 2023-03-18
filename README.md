@@ -2,4 +2,5 @@
 
 ## Setup
 
-Copy the File 'Credentials.h.sample' and rename it to 'Credentials.h' and set the value for wifi and mqtt credentials.
+Copy the File ´Credentials.h.sample´ and rename it to ´Credentials.h´ and set appropriate values.
+Do the same for ´MqttConfig.h.sample´.

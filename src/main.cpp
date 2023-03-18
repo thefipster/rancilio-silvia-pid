@@ -8,15 +8,15 @@ void setup()
   wifi->Connect();
 
   http = new HttpHandler();
-  http->Setup();
-  AsyncElegantOTA.begin(&http->GetServerReference());
+  http->Begin();
+  AsyncElegantOTA.begin(http->server);
 
-  mqtt = new MqttHandler(&mqttClient, &control, &model);
+  mqtt = new MqttHandler(&mqttClient, &controlModel, &senseModel);
   mqtt->Connect();
   mqttClient.setCallback(callback);
   mqtt->Subscribe();
 
-  controller = new Controller(&control, &model);
+  controller = new Controller(&controlModel, &senseModel);
 }
 
 void loop()

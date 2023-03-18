@@ -26,17 +26,18 @@ void MqttHandler::Subscribe()
 
 bool MqttHandler::Loop()
 {
-    bool state = true;
-
-    state = state && client->loop();
+    bool ok = client->loop();
 
     if (!client->connected())
-        state = state && reconnect();
+        ok = reconnect();
 
-    if (millis() - intervalStart > publishIntervalInMs)
+    if (!ok)
+        return false;
+
+    if (millis() - loopStart > publishIntervalInMs)
         publish();
 
-    return state;
+    return true;
 }
 
 bool MqttHandler::reconnect()
@@ -61,7 +62,7 @@ bool MqttHandler::reconnect()
 
 void MqttHandler::publish()
 {
-    intervalStart = millis();
+    loopStart = millis();
 
     client->publish(MQTT_BOILER_TOPIC, String(model->boilerTemp, 3).c_str());
     client->publish(MQTT_HEAD_TOPIC, String(model->headTemp, 3).c_str());
@@ -117,4 +118,15 @@ void MqttHandler::copyModel()
     oldModel.headTemp = model->headTemp;
     oldModel.heaterState = model->heaterState;
     oldModel.pidControl = model->pidControl;
+}
+
+void MqttHandler::copyControls()
+{
+    oldControls.coldstart = controls->coldstart;
+    oldControls.coldstart = controls->coldstart;
+    oldControls.coldstart = controls->coldstart;
+    oldControls.coldstart = controls->coldstart;
+    oldControls.coldstart = controls->coldstart;
+    oldControls.coldstart = controls->coldstart;
+    oldControls.coldstart = controls->coldstart;
 }

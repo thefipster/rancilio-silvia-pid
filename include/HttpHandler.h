@@ -8,13 +8,11 @@
 class HttpHandler
 {
 public:
+    AsyncWebServer *server;
+
     HttpHandler();
     
-    void Setup();
-    AsyncWebServer& GetServerReference();
-
-private:
-    AsyncWebServer *server;
+    void Begin();
 };
 
 #endif
