@@ -13,8 +13,8 @@
 #include <AsyncElegantOTA.h>
 #include <PubSubClient.h>
 
-#include <Controller.h>
-#include <MqttHandler.h>
+#include <PidController.h>
+#include <MqttInterface.h>
 #include <OtauRedirect.h>
 #include <WifiConnection.h>
 #include <MqttConnection.h>
@@ -24,12 +24,13 @@ PubSubClient MqttClient(WifiClient);
 WifiConnection Wifi(HOSTNAME, WIFI_SSID, WIFI_PASS);
 OtauRedirect Otau;
 
-MqttConnection *Mqtt;
-Controller *Pid;
-MqttHandler *MqttInterface;
-
 PublishModel SenseData;
 ControlModel ControlData;
+
+MqttConnection Mqtt(&MqttClient, MQTT_IP, MQTT_PORT);
+MqttInterface Interface(&MqttClient, &ControlData, &SenseData);
+
+PidController *Pid;
 
 void setup();
 void loop();

@@ -1,5 +1,5 @@
-#ifndef CONTROLLER_H
-#define CONTROLLER_H
+#ifndef PIDCONTROLLER_H
+#define PIDCONTROLLER_H
 
 #include <Defaults.h>
 #include <Pins.h>
@@ -11,21 +11,21 @@
 #include <PID_v1.h>
 #include <TsicSensor.h>
 
-class Controller
+class PidController
 {
 
 public:
-    Controller(ControlModel *controls, PublishModel *publish);
+    PidController(ControlModel *controls, PublishModel *publish);
 
     void Loop();
 
 private:
     PID *pid;
-
     double input;
     double output;
     double setpoint;
-    unsigned long loopStart = 0;
+
+    unsigned long windowStart = 0;
 
     TsicSensor *boilerSensor;
     TsicSensor *groupheadSensor;

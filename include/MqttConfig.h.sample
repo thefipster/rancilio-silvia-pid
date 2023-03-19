@@ -1,45 +1,48 @@
 #ifndef MQTTTOPICS_H
 #define MQTTTOPICS_H
 
+// Credentials
+#define MQTT_USER ""
+#define MQTT_PASS ""
+
 // Server & Client
 #define MQTT_IP IPAddress(192, 168, 1, 234)
 #define MQTT_PORT 1883
 #define MQTT_CLIENTID "rancilio-silvia"
-#define MQTT_RETRY_LIMIT 5
 
 // Message intervals
-#define MQTT_PUBLISH_INTERVAL_MS 200
-#define MQTT_HEARTBEAT_INTERVAL_MS 1000
+#define PUBLISH_INTERVAL_MS 200
+#define HEARTBEAT_INTERVAL_MS 1000
 
 // Availability topics
-#define MQTT_STATE_TOPIC ""
+#define STATE_TOPIC ""
 
 // Sensor topics
-#define MQTT_PID_TOPIC ""
-#define MQTT_BOILER_TOPIC ""
-#define MQTT_HEAD_TOPIC ""
-#define MQTT_HEATER_TOPIC ""
+#define PID_TOPIC ""
+#define BOILER_TOPIC ""
+#define HEAD_TOPIC ""
+#define HEATER_TOPIC ""
 
 // Control topics
-#define MQTT_CYCLE_PUB_TOPIC ""
-#define MQTT_CYCLE_SUB_TOPIC ""
+#define CYCLE_PUB_TOPIC ""
+#define CYCLE_SUB_TOPIC ""
 
-#define MQTT_WINDOW_PUB_TOPIC ""
-#define MQTT_WINDOW_SUB_TOPIC ""
+#define WINDOW_PUB_TOPIC ""
+#define WINDOW_SUB_TOPIC ""
 
-#define MQTT_TARGET_PUB_TOPIC ""
-#define MQTT_TARGET_SUB_TOPIC ""
+#define TARGET_PUB_TOPIC ""
+#define TARGET_SUB_TOPIC ""
 
-#define MQTT_COLDSTART_PUB_TOPIC ""
-#define MQTT_COLDSTART_SUB_TOPIC ""
+#define COLDSTART_PUB_TOPIC ""
+#define COLDSTART_SUB_TOPIC ""
 
-#define MQTT_P_PUB_TOPIC ""
-#define MQTT_P_SUB_TOPIC ""
+#define P_PUB_TOPIC ""
+#define P_SUB_TOPIC ""
 
-#define MQTT_I_PUB_TOPIC ""
-#define MQTT_I_SUB_TOPIC ""
+#define I_PUB_TOPIC ""
+#define I_SUB_TOPIC ""
 
-#define MQTT_D_PUB_TOPIC ""
-#define MQTT_D_SUB_TOPIC ""
+#define D_PUB_TOPIC ""
+#define D_SUB_TOPIC ""
 
 #endif
