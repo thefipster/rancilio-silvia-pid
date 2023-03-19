@@ -14,20 +14,20 @@
 #include <PubSubClient.h>
 
 #include <Controller.h>
-#include <HttpHandler.h>
 #include <MqttHandler.h>
-#include <WifiHandler.h>
+#include <OtauRedirect.h>
+#include <WifiConnection.h>
 
-WiFiClient wifiClient;
-PubSubClient mqttClient(wifiClient);
+WiFiClient WifiClient;
+PubSubClient MqttClient(WifiClient);
+WifiConnection Wifi(HOSTNAME, WIFI_SSID, WIFI_PASS);
+OtauRedirect Otau;
 
-WifiHandler *wifi;
-Controller *controller;
-HttpHandler *http;
-MqttHandler *mqtt;
+Controller *PidLoop;
+MqttHandler *Mqtt;
 
-PublishModel senseModel;
-ControlModel controlModel;
+PublishModel SenseData;
+ControlModel ControlData;
 
 void setup();
 void loop();

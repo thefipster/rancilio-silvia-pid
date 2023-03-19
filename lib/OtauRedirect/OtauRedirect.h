@@ -1,18 +1,15 @@
-#ifndef HTTPHANDLER_H
-#define HTTPHANDLER_H
+#ifndef OTAUREDIRECT_H
+#define OTAUREDIRECT_H
 
 #include <Arduino.h>
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 
-class HttpHandler
+class OtauRedirect
 {
 public:
     AsyncWebServer *server;
-
-    HttpHandler();
-
+    OtauRedirect();
     void Begin();
 };
-
 #endif

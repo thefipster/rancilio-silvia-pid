@@ -3,34 +3,30 @@
 void setup()
 {
   Serial.begin(SERIAL_BAUD);
+  Wifi.Connect();
+  Otau.Begin();
+  AsyncElegantOTA.begin(Otau.server);
 
-  wifi = new WifiHandler();
-  wifi->Connect();
+  Mqtt = new MqttHandler(&MqttClient, &ControlData, &SenseData);
+  Mqtt->Connect();
+  MqttClient.setCallback(callback);
+  Mqtt->Subscribe();
 
-  http = new HttpHandler();
-  http->Begin();
-  AsyncElegantOTA.begin(http->server);
-
-  mqtt = new MqttHandler(&mqttClient, &controlModel, &senseModel);
-  mqtt->Connect();
-  mqttClient.setCallback(callback);
-  mqtt->Subscribe();
-
-  controller = new Controller(&controlModel, &senseModel);
+  PidLoop = new Controller(&ControlData, &SenseData);
 }
 
 void loop()
 {
-  bool wifiState = wifi->Loop();
-  bool mqttState = mqtt->Loop();
+  bool wifiState = Wifi.Loop();
+  bool mqttState = Mqtt->Loop();
 
   if (!wifiState || !mqttState)
     ESP.restart();
 
-  controller->Loop();
+  PidLoop->Loop();
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
 {
-  mqtt->Callback(topic, payload, length);
+  Mqtt->Callback(topic, payload, length);
 }
