@@ -2,35 +2,35 @@
 
 void setup()
 {
-    Serial.begin(SERIAL_BAUD);
+  Serial.begin(SERIAL_BAUD);
 
-    wifi = new WifiHandler();
-    wifi->Connect();
+  wifi = new WifiHandler();
+  wifi->Connect();
 
-    http = new HttpHandler();
-    http->Begin();
-    AsyncElegantOTA.begin(http->server);
+  http = new HttpHandler();
+  http->Begin();
+  AsyncElegantOTA.begin(http->server);
 
-    mqtt = new MqttHandler(&mqttClient, &controlModel, &senseModel);
-    mqtt->Connect();
-    mqttClient.setCallback(callback);
-    mqtt->Subscribe();
+  mqtt = new MqttHandler(&mqttClient, &controlModel, &senseModel);
+  mqtt->Connect();
+  mqttClient.setCallback(callback);
+  mqtt->Subscribe();
 
-    controller = new Controller(&controlModel, &senseModel);
+  controller = new Controller(&controlModel, &senseModel);
 }
 
 void loop()
 {
-    bool wifiState = wifi->Loop();
-    bool mqttState = mqtt->Loop();
+  bool wifiState = wifi->Loop();
+  bool mqttState = mqtt->Loop();
 
-    if (!wifiState || !mqttState)
-        ESP.restart();
+  if (!wifiState || !mqttState)
+    ESP.restart();
 
-    controller->Loop();
+  controller->Loop();
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
 {
-    mqtt->Callback(topic, payload, length);
+  mqtt->Callback(topic, payload, length);
 }
