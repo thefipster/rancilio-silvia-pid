@@ -7,12 +7,14 @@ void setup()
   Otau.Begin();
   AsyncElegantOTA.begin(Otau.server);
 
-  Mqtt = new MqttHandler(&MqttClient, &ControlData, &SenseData);
-  Mqtt->Connect();
-  MqttClient.setCallback(callback);
-  Mqtt->Subscribe();
+  Mqtt = new MqttConnection(&MqttClient, MQTT_IP, MQTT_PORT);
+  Pid = new Controller(&ControlData, &SenseData);
+  MqttInterface = new MqttHandler(&MqttClient, &ControlData, &SenseData);
 
-  PidLoop = new Controller(&ControlData, &SenseData);
+  Mqtt->SetHeartbeat(MQTT_STATE_TOPIC, MQTT_HEARTBEAT_INTERVAL_MS);
+  Mqtt->Connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS);
+  MqttClient.setCallback(callback);
+  MqttInterface->Subscribe();
 }
 
 void loop()
@@ -23,10 +25,11 @@ void loop()
   if (!wifiState || !mqttState)
     ESP.restart();
 
-  PidLoop->Loop();
+  MqttInterface->Loop();
+  Pid->Loop();
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
 {
-  Mqtt->Callback(topic, payload, length);
+  MqttInterface->Callback(topic, payload, length);
 }

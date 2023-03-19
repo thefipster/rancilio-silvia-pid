@@ -17,9 +17,8 @@ class MqttHandler
 
 public:
     MqttHandler(PubSubClient *client, ControlModel *controls, PublishModel *publish);
-    bool Connect();
     void Subscribe();
-    bool Loop();
+    void Loop();
     void Callback(char *topic, byte *payload, unsigned int length);
 
 private:
@@ -29,17 +28,12 @@ private:
     PublishModel *model;
     PublishModel oldModel;
 
-    unsigned long publishIntervalInMs = MQTT_PUBLISH_INTERVAL_MS;
+    unsigned long intervalInMs = MQTT_PUBLISH_INTERVAL_MS;
     unsigned long loopStart = 0;
-
-    unsigned long heartbeatIntervalInMs = MQTT_HEARTBEAT_INTERVAL_MS;
-    unsigned long heartbeatStart = 0;
 
     void copyModel();
     void copyControls();
-    bool reconnect();
     void publish();
-    void heartbeat();
 };
 
 #endif

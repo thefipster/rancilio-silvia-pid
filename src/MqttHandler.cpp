@@ -7,12 +7,6 @@ MqttHandler::MqttHandler(PubSubClient *client, ControlModel *controls, PublishMo
     this->model = publish;
 }
 
-bool MqttHandler::Connect()
-{
-    client->setServer(MQTT_IP, MQTT_PORT);
-    return client->connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS);
-}
-
 void MqttHandler::Subscribe()
 {
     client->subscribe(MQTT_TARGET_SUB_TOPIC);
@@ -24,55 +18,14 @@ void MqttHandler::Subscribe()
     client->subscribe(MQTT_D_SUB_TOPIC);
 }
 
-bool MqttHandler::Loop()
+void MqttHandler::Loop()
 {
-    bool ok = client->loop();
-
-    if (!client->connected())
-        ok = reconnect();
-
-    if (!ok)
-        return false;
-
-    if (millis() - heartbeatStart > heartbeatIntervalInMs)
-        heartbeat();
-
-    if (millis() - loopStart > publishIntervalInMs)
+    if (millis() - loopStart > intervalInMs)
         publish();
-
-    return true;
-}
-
-bool MqttHandler::reconnect()
-{
-    int tries = 0;
-    if (!client->connected())
-    {
-        while (tries < MQTT_RETRY_LIMIT && !client->connected())
-        {
-            client->connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS);
-            uint8_t timeout = 5;
-            while (timeout && (!client->connected()))
-            {
-                timeout--;
-                delay(500);
-            }
-        }
-    }
-
-    return tries < MQTT_RETRY_LIMIT ? true : false;
-}
-
-void MqttHandler::heartbeat()
-{
-    heartbeatStart = millis();
-    client->publish(MQTT_STATE_TOPIC, "on");
 }
 
 void MqttHandler::publish()
 {
-    loopStart = millis();
-
     if (model->boilerTemp != oldModel.boilerTemp)
         client->publish(MQTT_BOILER_TOPIC, String(model->boilerTemp, 3).c_str());
 
@@ -108,6 +61,8 @@ void MqttHandler::publish()
 
     oldControls.copyFrom(*controls);
     oldModel.copyFrom(*model);
+
+    loopStart = millis();
 }
 
 void MqttHandler::Callback(char *topic, byte *payload, unsigned int length)

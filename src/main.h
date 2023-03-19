@@ -17,14 +17,16 @@
 #include <MqttHandler.h>
 #include <OtauRedirect.h>
 #include <WifiConnection.h>
+#include <MqttConnection.h>
 
 WiFiClient WifiClient;
 PubSubClient MqttClient(WifiClient);
 WifiConnection Wifi(HOSTNAME, WIFI_SSID, WIFI_PASS);
 OtauRedirect Otau;
 
-Controller *PidLoop;
-MqttHandler *Mqtt;
+MqttConnection *Mqtt;
+Controller *Pid;
+MqttHandler *MqttInterface;
 
 PublishModel SenseData;
 ControlModel ControlData;
