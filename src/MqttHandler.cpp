@@ -65,6 +65,7 @@ bool MqttHandler::reconnect()
 
 void MqttHandler::heartbeat()
 {
+    heartbeatStart = millis();
     client->publish(MQTT_STATE_TOPIC, "on");
 }
 
@@ -82,7 +83,7 @@ void MqttHandler::publish()
         client->publish(MQTT_PID_TOPIC, String(model->pidControl, 3).c_str());
 
     if (model->heaterState != oldModel.heaterState)
-        client->publish(MQTT_HEATER_TOPIC, model->heaterState ? "1" : "0");
+        client->publish(MQTT_HEATER_TOPIC, model->heaterState ? "on" : "off");
 
     if (controls->setpoint != oldControls.setpoint)
         client->publish(MQTT_TARGET_PUB_TOPIC, String(controls->setpoint, 3).c_str());
