@@ -1,6 +1,6 @@
-#include <Controller.h>
+#include <PidController.h>
 
-Controller::Controller(ControlModel *controlModel, PublishModel *publishModel)
+PidController::PidController(ControlModel *controlModel, PublishModel *publishModel)
 {
   setpoint = SETPOINT;
 
@@ -16,7 +16,7 @@ Controller::Controller(ControlModel *controlModel, PublishModel *publishModel)
   pid->SetMode(AUTOMATIC);
 }
 
-void Controller::Loop()
+void PidController::Loop()
 {
   readTemps();
   updateParameters();
@@ -25,7 +25,7 @@ void Controller::Loop()
   digitalWrite(SSR_PIN, publishModel->heaterState ? 1 : 0);
 }
 
-void Controller::readTemps()
+void PidController::readTemps()
 {
   if (boilerSensor->newValueAvailable())
     publishModel->boilerTemp = boilerSensor->getTempCelsius();
@@ -34,7 +34,7 @@ void Controller::readTemps()
     publishModel->headTemp = groupheadSensor->getTempCelsius();
 }
 
-void Controller::updateParameters()
+void PidController::updateParameters()
 {
   input = publishModel->boilerTemp;
   setpoint = controlModel->setpoint;
@@ -43,12 +43,12 @@ void Controller::updateParameters()
   pid->SetTunings(controlModel->kP, controlModel->kI, controlModel->kD);
 }
 
-void Controller::evaluate()
+void PidController::evaluate()
 {
-  long timeDelta = millis() - loopStart;
+  long timeDelta = millis() - windowStart;
   if (timeDelta > controlModel->windowMs / controlModel->dutyCycle)
-    loopStart = millis();
+    windowStart = millis();
 
-  publishModel->pidControl = input < controlModel->coldstart ? 1 : output / controlModel->windowMs;
+  publishModel->pidControl = input < controlModel->coldstart ? -1 : output / controlModel->windowMs;
   publishModel->heaterState = input < controlModel->coldstart ? true : output > timeDelta;
 }

@@ -4,33 +4,31 @@ void setup()
 {
   Serial.begin(SERIAL_BAUD);
 
-  wifi = new WifiHandler();
-  wifi->Connect();
+  Wifi.Connect();
+  Otau.Begin();
+  AsyncElegantOTA.begin(Otau.server);
 
-  http = new HttpHandler();
-  http->Begin();
-  AsyncElegantOTA.begin(http->server);
+  Mqtt.SetHeartbeat(STATE_TOPIC, HEARTBEAT_INTERVAL_MS);
+  Mqtt.Connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS);
+  MqttClient.setCallback(callback);
+  Interface.Subscribe();
 
-  mqtt = new MqttHandler(&mqttClient, &controlModel, &senseModel);
-  mqtt->Connect();
-  mqttClient.setCallback(callback);
-  mqtt->Subscribe();
-
-  controller = new Controller(&controlModel, &senseModel);
+  Pid = new PidController(&ControlData, &SenseData);
 }
 
 void loop()
 {
-  bool wifiState = wifi->Loop();
-  bool mqttState = mqtt->Loop();
+  bool wifiState = Wifi.Loop();
+  bool mqttState = Mqtt.Loop();
 
   if (!wifiState || !mqttState)
     ESP.restart();
 
-  controller->Loop();
+  Interface.Loop();
+  Pid->Loop();
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
 {
-  mqtt->Callback(topic, payload, length);
+  Interface.Callback(topic, payload, length);
 }

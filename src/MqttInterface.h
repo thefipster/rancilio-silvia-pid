@@ -1,5 +1,5 @@
-#ifndef MQTTHANDLER_H
-#define MQTTHANDLER_H
+#ifndef MQTTINTERFACE_H
+#define MQTTINTERFACE_H
 
 #include <Credentials.h>
 #include <Defaults.h>
@@ -12,14 +12,13 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 
-class MqttHandler
+class MqttInterface
 {
 
 public:
-    MqttHandler(PubSubClient *client, ControlModel *controls, PublishModel *publish);
-    bool Connect();
+    MqttInterface(PubSubClient *client, ControlModel *controls, PublishModel *publish);
     void Subscribe();
-    bool Loop();
+    void Loop();
     void Callback(char *topic, byte *payload, unsigned int length);
 
 private:
@@ -29,17 +28,12 @@ private:
     PublishModel *model;
     PublishModel oldModel;
 
-    unsigned long publishIntervalInMs = MQTT_PUBLISH_INTERVAL_MS;
+    unsigned long intervalInMs = PUBLISH_INTERVAL_MS;
     unsigned long loopStart = 0;
-
-    unsigned long heartbeatIntervalInMs = MQTT_HEARTBEAT_INTERVAL_MS;
-    unsigned long heartbeatStart = 0;
 
     void copyModel();
     void copyControls();
-    bool reconnect();
     void publish();
-    void heartbeat();
 };
 
 #endif
