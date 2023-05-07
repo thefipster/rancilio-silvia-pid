@@ -1,6 +1,10 @@
 # Rancilio Silvia PID
 
-Yet another implementation of a PID controller for the Rancilio Silvia Coffee Machine. Using an ESP32 (ESP8266 should work as well) with a solid state relay and a TSIC temperature probe the boiler temperature can be controller within one degree celsius.
+Yet another implementation of a PID controller for the Rancilio Silvia Coffee Machine. Using an ESP32 (ESP8266 should work as well) with a solid state relay and a TSIC 306 temperature probe the boiler temperature can be controller within one degree celsius.
+
+The coffee machine connects to a MQTT broker to publish sensor data. Control parameters for the pid loop can also be set via MQTT topics. These topics can be used to integrate the coffee maker into `home assistant`.
+
+The firmware can be updated via the OTA endpoint `/update`.
 
 ## Table of Contents
 
@@ -137,9 +141,9 @@ Weight of the derivative component. See PID Control for more information.
 
 ## Contributing
 
-Since C++ is not my strongest of languages and this is my first implementation which is interacting with ESPHome, Home Assistant and the uart protocol in general, there are probably a lot of things that can be done easier or cleaner. 
+Since C++ is not my strongest of languages and this is my first implementation of a pid control loop, there are probably a lot of things that can be done easier or cleaner.
 
-Please feel free to dive in! [Open an issue](https://github.com/thefipster/rancilio-silvia-pid/issues/new) or submit PRs. 
+Please feel free to dive in! [Open an issue](https://github.com/thefipster/rancilio-silvia-pid/issues/new) or submit PRs.
 
 ## License
 
