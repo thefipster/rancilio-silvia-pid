@@ -1,5 +1,45 @@
 # Rancilio Silvia PID
 
+Yet another implementation of a PID controller for the Rancilio Silvia Coffee Machine. Using an ESP32 (ESP8266 should work as well) with a solid state relay and a TSIC temperature probe the boiler temperature can be controller within one degree celsius.
+
+## Table of Contents
+
+- [Rancilio Silvia PID](#rancilio-silvia-pid)
+  - [Table of Contents](#table-of-contents)
+  - [Hardware](#hardware)
+    - [ESP 32 NodeMCU Dev Kit C](#esp-32-nodemcu-dev-kit-c)
+    - [TSIC 306 Temperature Probes](#tsic-306-temperature-probes)
+    - [Solid State Relay](#solid-state-relay)
+  - [Setup](#setup)
+  - [OTAU](#otau)
+  - [MQTT Topics](#mqtt-topics)
+    - [Availability Topics](#availability-topics)
+    - [Sensor Topics](#sensor-topics)
+    - [Control Topics](#control-topics)
+      - [Target](#target)
+      - [Coldstart](#coldstart)
+      - [Window](#window)
+      - [Cycle](#cycle)
+      - [P Value](#p-value)
+      - [I Value](#i-value)
+      - [D Value](#d-value)
+  - [Contributing](#contributing)
+  - [License](#license)
+
+## Hardware
+
+### ESP 32 NodeMCU Dev Kit C
+
+This is the microcontroller running the code. Other variants of the ESP32 and the ESP8266 should work as well, but I have not tested this.
+
+### TSIC 306 Temperature Probes
+
+These temperature probes provide accurate measurements up to 150°C and are used to measure the boiler and grouphead temperature. The connected pins can be configured in the `Pins.h` header file.
+
+### Solid State Relay
+
+The relay is used to switch the heating coil of the boiler on and off. A solid state relay is chosen to provide fast switching without wear and click noises. The heating element can draw up to 1.3 kW which must be compatible with the relay specs. The connected pins can be configured in the `Pins.h` header file.
+
 ## Setup
 
 Copy the File `Credentials.h.sample` and rename it to `Credentials.h` and set appropriate values.
@@ -95,16 +135,12 @@ Weight of the derivative component. See PID Control for more information.
 |-----------|---|
 | MQTT_D_PUB_TOPIC | MQTT_D_SUB_TOPIC  |
 
-## Hardware
+## Contributing
 
-### ESP 32 NodeMCU Dev Kit C
+Since C++ is not my strongest of languages and this is my first implementation which is interacting with ESPHome, Home Assistant and the uart protocol in general, there are probably a lot of things that can be done easier or cleaner. 
 
-This is the microcontroller running the code. 
+Please feel free to dive in! [Open an issue](https://github.com/thefipster/rancilio-silvia-pid/issues/new) or submit PRs. 
 
-### TSIC 306 Temperature Probes
+## License
 
-These temperature probes provide accurate measurements up to 150°C and are used to measure the boiler and grouphead temperature. The connected pins can be configured in the `Pins.h` header file.
-
-### Solid State Relay
-
-The relay is used to switch the heating coil of the boiler on and off. A solid state relay is chosen to provide fast switching without wear and click noises. The heating element can draw up to 1.3 kW which must be compatible with the relay specs. The connected pins can be configured in the `Pins.h` header file.
+MIT © thefipster
