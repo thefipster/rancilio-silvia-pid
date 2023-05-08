@@ -28,6 +28,7 @@ The firmware can be updated via the OTA endpoint `/update`.
       - [I Value](#i-value)
       - [D Value](#d-value)
   - [Contributing](#contributing)
+  - [Thanks and Credits](#thanks-and-credits)
   - [License](#license)
 
 ## Hardware
@@ -144,6 +145,10 @@ Weight of the derivative component. See PID Control for more information.
 Since C++ is not my strongest of languages and this is my first implementation of a pid control loop, there are probably a lot of things that can be done easier or cleaner.
 
 Please feel free to dive in! [Open an issue](https://github.com/thefipster/rancilio-silvia-pid/issues/new) or submit PRs.
+
+## Thanks and Credits
+
+Thanks to [tripplefox](https://github.com/tripplefox/TsicSensor) for implementing the TSIC sensor family under MIT license, works just great!
 
 ## License
 
