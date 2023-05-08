@@ -52,7 +52,7 @@ Do the same for `MqttConfig.h.sample`. Explanation for the topics is provided be
 
 ## OTAU
 
-The firmware of the coffee machine can be updated via OTAU using the `/update` endpoint. The hostname of the device can be cofigured with the `HOSTNAME` setting.   
+The firmware of the coffee machine can be updated via OTAU using the `/update` endpoint. The hostname of the device can be cofigured with the `HOSTNAME` setting.
 
 ## MQTT Topics
 
