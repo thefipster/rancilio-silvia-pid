@@ -6,11 +6,10 @@
 #include <MqttConfig.h>
 #include <Pins.h>
 
-#include <ControlModel.h>
-#include <PublishModel.h>
+#include <StateModel.h>
 
 #include <Arduino.h>
-#include <AsyncElegantOTA.h>
+#include <ElegantOTA.h>
 #include <PubSubClient.h>
 
 #include <PidController.h>
@@ -22,13 +21,12 @@
 WiFiClient WifiClient;
 PubSubClient MqttClient(WifiClient);
 WifiConnection Wifi(HOSTNAME, WIFI_SSID, WIFI_PASS);
-OtauRedirect Otau;
+WebServer server(80);
 
-PublishModel SenseData;
-ControlModel ControlData;
+StateModel State;
 
 MqttConnection Mqtt(&MqttClient, MQTT_IP, MQTT_PORT);
-MqttInterface Interface(&MqttClient, &ControlData, &SenseData);
+MqttInterface Interface(&MqttClient, &State);
 
 PidController *Pid;
 

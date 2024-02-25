@@ -1,10 +1,9 @@
 #include <MqttInterface.h>
 
-MqttInterface::MqttInterface(PubSubClient *client, ControlModel *controls, PublishModel *publish)
+MqttInterface::MqttInterface(PubSubClient *client, StateModel *state)
 {
     this->client = client;
-    this->controls = controls;
-    this->model = publish;
+    this->state = state;
 }
 
 void MqttInterface::Subscribe()
@@ -26,41 +25,40 @@ void MqttInterface::Loop()
 
 void MqttInterface::publish()
 {
-    if (model->boilerTemp != oldModel.boilerTemp)
-        client->publish(BOILER_TOPIC, String(model->boilerTemp, 3).c_str());
+    if (state->boilerTemp != oldState.boilerTemp)
+        client->publish(BOILER_TOPIC, String(state->boilerTemp, 3).c_str());
 
-    if (model->headTemp != oldModel.headTemp)
-        client->publish(HEAD_TOPIC, String(model->headTemp, 3).c_str());
+    if (state->headTemp != oldState.headTemp)
+        client->publish(HEAD_TOPIC, String(state->headTemp, 3).c_str());
 
-    if (model->pidControl != oldModel.pidControl)
-        client->publish(PID_TOPIC, String(model->pidControl, 3).c_str());
+    if (state->pidControl != oldState.pidControl)
+        client->publish(PID_TOPIC, String(state->pidControl, 3).c_str());
 
-    if (model->heaterState != oldModel.heaterState)
-        client->publish(HEATER_TOPIC, model->heaterState ? "on" : "off");
+    if (state->heaterState != oldState.heaterState)
+        client->publish(HEATER_TOPIC, state->heaterState ? "on" : "off");
 
-    if (controls->setpoint != oldControls.setpoint)
-        client->publish(TARGET_PUB_TOPIC, String(controls->setpoint, 3).c_str());
+    if (state->setpoint != oldState.setpoint)
+        client->publish(TARGET_PUB_TOPIC, String(state->setpoint, 3).c_str());
 
-    if (controls->coldstart != oldControls.coldstart)
-        client->publish(COLDSTART_PUB_TOPIC, String(controls->coldstart, 3).c_str());
+    if (state->coldstart != oldState.coldstart)
+        client->publish(COLDSTART_PUB_TOPIC, String(state->coldstart, 3).c_str());
 
-    if (controls->windowMs != oldControls.windowMs)
-        client->publish(WINDOW_PUB_TOPIC, String(controls->windowMs, 3).c_str());
+    if (state->windowMs != oldState.windowMs)
+        client->publish(WINDOW_PUB_TOPIC, String(state->windowMs, 3).c_str());
 
-    if (controls->dutyCycle != oldControls.dutyCycle)
-        client->publish(CYCLE_PUB_TOPIC, String(controls->dutyCycle, 3).c_str());
+    if (state->dutyCycle != oldState.dutyCycle)
+        client->publish(CYCLE_PUB_TOPIC, String(state->dutyCycle, 3).c_str());
 
-    if (controls->kP != oldControls.kP)
-        client->publish(P_PUB_TOPIC, String(controls->kP, 3).c_str());
+    if (state->kP != oldState.kP)
+        client->publish(P_PUB_TOPIC, String(state->kP, 3).c_str());
 
-    if (controls->kI != oldControls.kI)
-        client->publish(I_PUB_TOPIC, String(controls->kI, 3).c_str());
+    if (state->kI != oldState.kI)
+        client->publish(I_PUB_TOPIC, String(state->kI, 3).c_str());
 
-    if (controls->kD != oldControls.kD)
-        client->publish(D_PUB_TOPIC, String(controls->kD, 3).c_str());
+    if (state->kD != oldState.kD)
+        client->publish(D_PUB_TOPIC, String(state->kD, 3).c_str());
 
-    oldControls.copyFrom(*controls);
-    oldModel.copyFrom(*model);
+    oldState.copyFrom(*state);
 
     loopStart = millis();
 }
@@ -74,23 +72,23 @@ void MqttInterface::Callback(char *topic, byte *payload, unsigned int length)
     double value = atof(message.c_str());
 
     if (strcmp(topic, TARGET_SUB_TOPIC) == 0)
-        controls->setpoint = value;
+        state->setpoint = value;
 
     if (strcmp(topic, COLDSTART_SUB_TOPIC) == 0)
-        controls->coldstart = value;
+        state->coldstart = value;
 
     if (strcmp(topic, WINDOW_SUB_TOPIC) == 0)
-        controls->windowMs = value;
+        state->windowMs = value;
 
     if (strcmp(topic, CYCLE_SUB_TOPIC) == 0)
-        controls->dutyCycle = value;
+        state->dutyCycle = value;
 
     if (strcmp(topic, P_SUB_TOPIC) == 0)
-        controls->kP = value;
+        state->kP = value;
 
     if (strcmp(topic, I_SUB_TOPIC) == 0)
-        controls->kI = value;
+        state->kI = value;
 
     if (strcmp(topic, D_SUB_TOPIC) == 0)
-        controls->kD = value;
+        state->kD = value;
 }

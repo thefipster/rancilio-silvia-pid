@@ -5,25 +5,25 @@ void setup()
   Serial.begin(SERIAL_BAUD);
 
   Wifi.Connect();
-  Otau.Begin();
-  AsyncElegantOTA.begin(Otau.server);
+  server.on("/", []() {
+    server.send(418, "text/plain", "Hi! I'm actually a coffee machine.");
+  });
+
+  ElegantOTA.begin(&server);
+  server.begin();
 
   Mqtt.SetHeartbeat(STATE_TOPIC, HEARTBEAT_INTERVAL_MS);
   Mqtt.Connect(MQTT_CLIENTID, MQTT_USER, MQTT_PASS);
   MqttClient.setCallback(callback);
   Interface.Subscribe();
 
-  Pid = new PidController(&ControlData, &SenseData);
+  Pid = new PidController(&State);
 }
 
 void loop()
 {
-  bool wifiState = Wifi.Loop();
-  bool mqttState = Mqtt.Loop();
-
-  if (!wifiState || !mqttState)
-    ESP.restart();
-
+  Wifi.Loop();
+  Mqtt.Loop();
   Interface.Loop();
   Pid->Loop();
 }

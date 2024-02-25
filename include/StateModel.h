@@ -1,10 +1,15 @@
-#ifndef CONTROLMODEL_H
-#define CONTROLMODEL_H
+#ifndef STATEMODEL_H
+#define STATEMODEL_H
 
 #include <Defaults.h>
 
-struct ControlModel
+struct StateModel
 {
+    double boilerTemp;
+    double headTemp;
+    double pidControl;
+    bool heaterState;
+
     double setpoint = SETPOINT;
     double windowMs = WINDOW;
     double coldstart = COLDSTART;
@@ -13,8 +18,13 @@ struct ControlModel
     double kI = KI;
     double kD = KD;
 
-    void copyFrom(ControlModel model)
+    void copyFrom(StateModel model)
     {
+        boilerTemp = model.boilerTemp;
+        headTemp = model.headTemp;
+        pidControl = model.pidControl;
+        heaterState = model.heaterState;
+
         setpoint = model.setpoint;
         windowMs = model.windowMs;
         coldstart = model.coldstart;

@@ -5,8 +5,7 @@
 #include <Defaults.h>
 #include <MqttConfig.h>
 
-#include <ControlModel.h>
-#include <PublishModel.h>
+#include <StateModel.h>
 
 #include <Arduino.h>
 #include <WiFi.h>
@@ -16,17 +15,15 @@ class MqttInterface
 {
 
 public:
-    MqttInterface(PubSubClient *client, ControlModel *controls, PublishModel *publish);
+    MqttInterface(PubSubClient *client, StateModel *state);
     void Subscribe();
     void Loop();
     void Callback(char *topic, byte *payload, unsigned int length);
 
 private:
     PubSubClient *client;
-    ControlModel *controls;
-    ControlModel oldControls;
-    PublishModel *model;
-    PublishModel oldModel;
+    StateModel *state;
+    StateModel oldState;
 
     unsigned long intervalInMs = PUBLISH_INTERVAL_MS;
     unsigned long loopStart = 0;

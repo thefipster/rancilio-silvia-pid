@@ -4,8 +4,7 @@
 #include <Defaults.h>
 #include <Pins.h>
 
-#include <ControlModel.h>
-#include <PublishModel.h>
+#include <StateModel.h>
 
 #include <Arduino.h>
 #include <PID_v1.h>
@@ -15,7 +14,7 @@ class PidController
 {
 
 public:
-    PidController(ControlModel *controls, PublishModel *publish);
+    PidController(StateModel *state);
 
     void Loop();
 
@@ -30,8 +29,7 @@ private:
     TsicSensor *boilerSensor;
     TsicSensor *groupheadSensor;
 
-    PublishModel *publishModel;
-    ControlModel *controlModel;
+    StateModel *state;
 
     void readTemps();
     void updateParameters();

@@ -42,18 +42,13 @@ bool MqttConnection::Loop()
 
 bool MqttConnection::connect()
 {
-    int tries = 0;
-
-    do
+    client->connect(clientId, username, password);
+    uint8_t timeout = 5;
+    while (timeout && (!client->connected()))
     {
-        client->connect(clientId, username, password);
-        uint8_t timeout = 5;
-        while (timeout && (!client->connected()))
-        {
-            timeout--;
-            delay(500);
-        }
-    } while (tries < 5 && !client->connected());
+        timeout--;
+        delay(500);
+    }
 
     return client->connected();
 }

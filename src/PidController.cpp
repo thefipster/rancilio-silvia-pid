@@ -1,11 +1,10 @@
 #include <PidController.h>
 
-PidController::PidController(ControlModel *controlModel, PublishModel *publishModel)
+PidController::PidController(StateModel *state)
 {
   setpoint = SETPOINT;
 
-  this->controlModel = controlModel;
-  this->publishModel = publishModel;
+  this->state = state;
 
   pinMode(SSR_PIN, OUTPUT);
 
@@ -22,33 +21,33 @@ void PidController::Loop()
   updateParameters();
   pid->Compute();
   evaluate();
-  digitalWrite(SSR_PIN, publishModel->heaterState ? 1 : 0);
+  digitalWrite(SSR_PIN, state->heaterState ? 1 : 0);
 }
 
 void PidController::readTemps()
 {
   if (boilerSensor->newValueAvailable())
-    publishModel->boilerTemp = boilerSensor->getTempCelsius();
+    state->boilerTemp = boilerSensor->getTempCelsius();
 
   if (groupheadSensor->newValueAvailable())
-    publishModel->headTemp = groupheadSensor->getTempCelsius();
+    state->headTemp = groupheadSensor->getTempCelsius();
 }
 
 void PidController::updateParameters()
 {
-  input = publishModel->boilerTemp;
-  setpoint = controlModel->setpoint;
+  input = state->boilerTemp;
+  setpoint = state->setpoint;
 
-  pid->SetOutputLimits(0, controlModel->windowMs);
-  pid->SetTunings(controlModel->kP, controlModel->kI, controlModel->kD);
+  pid->SetOutputLimits(0, state->windowMs);
+  pid->SetTunings(state->kP, state->kI, state->kD);
 }
 
 void PidController::evaluate()
 {
   long timeDelta = millis() - windowStart;
-  if (timeDelta > controlModel->windowMs / controlModel->dutyCycle)
+  if (timeDelta > state->windowMs / state->dutyCycle)
     windowStart = millis();
 
-  publishModel->pidControl = input < controlModel->coldstart ? -1 : output / controlModel->windowMs;
-  publishModel->heaterState = input < controlModel->coldstart ? true : output > timeDelta;
+  state->pidControl = input < state->coldstart ? -1 : output / state->windowMs;
+  state->heaterState = input < state->coldstart ? true : output > timeDelta;
 }
