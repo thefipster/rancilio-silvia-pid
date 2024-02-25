@@ -14,7 +14,6 @@
 
 #include <PidController.h>
 #include <MqttInterface.h>
-#include <OtauRedirect.h>
 #include <WifiConnection.h>
 #include <MqttConnection.h>
 
